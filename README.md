@@ -1,2 +1,2 @@
 # IFNOT
-The IFNOT fnd
+The IFNOT fund
