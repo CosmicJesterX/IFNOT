@@ -7,7 +7,7 @@ This repository is connected with Charlie Labs AI, a Texas-based AI innovation c
 
 **Website:** [www.charlielabs.ai](https://www.charlielabs.ai)
 
-**Location:** Texas, USA
+**Location:** TEXAS "Linear"
 
 ### About the Integration
 
