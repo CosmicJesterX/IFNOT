@@ -1,2 +1,2 @@
 # IFNOT
-The IFNOT Charlie Labs, etc.
+The IFNOT fund
