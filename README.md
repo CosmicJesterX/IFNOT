@@ -7,6 +7,7 @@ IFNOT collaborates with Charlie Labs AI, a Texas-based AI innovation company, to
 Website: [Charlie Labs AI](https://www.charlielabs.ai)
 
 This repository contains no code-level integration; it documents the collaboration.
+**Location:** TEXAS "Linear"
 
 ## Contributing and Safety
 
