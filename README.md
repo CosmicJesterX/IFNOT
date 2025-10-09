@@ -1,14 +1,14 @@
 # IFNOT
-The IFNOT fund
 
-## Integration with Charlie Labs AI
+## Charlie Labs AI Collaboration
 
-This repository is connected with Charlie Labs AI, a Texas-based AI innovation company.
+IFNOT collaborates with Charlie Labs AI, a Texas-based AI innovation company, to explore and apply advanced AI capabilities.
 
-**Website:** [www.charlielabs.ai](https://www.charlielabs.ai)
+Website: [Charlie Labs AI](https://www.charlielabs.ai)
 
+This repository contains no code-level integration; it documents the collaboration.
 **Location:** TEXAS "Linear"
 
-### About the Integration
+## Contributing and Safety
 
-IFNOT is integrated with Charlie Labs AI to leverage advanced AI capabilities and collaborate on innovative solutions.
+All documentation contributions should follow our [Push-and-Polish checklist](./CONTRIBUTING.md#push-and-polish-checklist) (small PRs refined iteratively) and [safety guidance](./CONTRIBUTING.md#safety-and-review).

@@ -1,0 +1,53 @@
+name: Push and polish
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+
+permissions:
+  contents: read
+
+jobs:
+  polish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Prettier format check (Markdown/JSON/YAML)
+        run: |
+          npx --yes prettier@3.3.3 -c "**/*.{md,markdown,mdx,json,yml,yaml}"
+
+      - name: Detect Node.js project
+        id: detect
+        run: |
+          if [ -f package.json ]; then echo "present=true" >> "$GITHUB_OUTPUT"; else echo "present=false" >> "$GITHUB_OUTPUT"; fi
+
+      - name: Set up Node.js
+        if: steps.detect.outputs.present == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: "lts/*"
+          cache: "npm"
+
+      - name: Install dependencies (if package.json exists)
+        if: steps.detect.outputs.present == 'true'
+        run: |
+          npm install --no-audit --no-fund
+
+      - name: Lint (if script exists)
+        if: steps.detect.outputs.present == 'true'
+        run: |
+          npm run --if-present lint
+
+      - name: Typecheck (if script exists)
+        if: steps.detect.outputs.present == 'true'
+        run: |
+          npm run --if-present typecheck
+
+      - name: Test (if script exists)
+        if: steps.detect.outputs.present == 'true'
+        run: |
+          npm test --if-present
