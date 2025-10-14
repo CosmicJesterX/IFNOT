@@ -54,3 +54,30 @@ Open `index.html` directly in a browser—no build or server required.
 ---
 
 _If not now—when._
+
+<details>
+<summary><strong>Copy palette (whimsical options)</strong></summary>
+
+Use any of the lines below to swap the tagline under the title in this README
+and the `<p class="tag">` line in `index.html`. Keep the rest minimal.
+
+### Tagline options
+
+- quiet surface. improbable ideas ripple underneath.
+- anti‑noise. pro‑curiosity.
+- void‑compatible. sparks permitted.
+- tiny place for odd bright signals.
+- empty on purpose. full of maybe.
+- we plant question marks; see what grows.
+- minimal surface area; maximal “what if?”.
+- bring your own constellation.
+
+### One‑liner (body) options
+
+- Public notes and experiments. Light on ceremony; heavy on signal.
+- A sketchbook for unlikely ideas.
+- Small surface, long tail of possibilities.
+- Notes that prefer whispers to drums.
+- Quiet scaffolding for loud insights.
+
+</details>
