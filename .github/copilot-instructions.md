@@ -74,6 +74,20 @@ python3 fragle_heist_simulator.py
 
 No build process required - the simulator runs directly.
 
+## Contributor License Agreement (CLA)
+
+**IMPORTANT**: This repository requires all contributors to sign a Contributor License Agreement (CLA) before contributions can be accepted.
+
+- **CLA Document**: `EasyCLA_CLA_Signature_Request_for_Cloud_Nati.pdf` in the repository root
+- **Enforcement**: All pull requests must have a signed CLA on file
+- **Process**: Contributors will be prompted to sign the CLA when submitting their first pull request
+- **Requirement**: This is a crucial requirement and must be enforced for all external contributions
+
+When working with contributors:
+- Remind them about CLA requirements if they haven't signed
+- Do not merge pull requests without a signed CLA
+- Direct contributors to the CLA document for more information
+
 ## Special Considerations
 
 1. **Creative Content**: The heist simulator contains playful, creative content. Maintain this tone when making modifications.
