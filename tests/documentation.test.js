@@ -294,8 +294,10 @@ describe('SECURITY.md Validation', () => {
     it('should have proper heading hierarchy', () => {
       const headings = extractHeadings(securityContent);
       const h1Count = headings.filter(h => h.level === 1).length;
-      assert.ok(h1Count === 1, 'Should have exactly one h1 heading');
-      assert.ok(h1Count >= 1, 'Should have at least one h1 heading');
+      assert.ok(
+        h1Count === 1,
+        `SECURITY.md should have exactly one h1 heading, found ${h1Count}`
+      );
     });
   });
   
@@ -646,17 +648,17 @@ describe('Cross-Document Consistency', () => {
     const readmeMentionsSecurity = 
       containsPattern(readmeContent, 'security', 'i') ||
       containsPattern(readmeContent, 'vulnerabilit', 'i');
-    
-    if (readmeMentionsSecurity) {
-      const referencesSecurityDoc = containsPattern(readmeContent, 'SECURITY\\.md', 'i');
-      // This is a recommendation, not a hard requirement
-      if (!referencesSecurityDoc) {
-        console.log('INFO: README mentions security but does not reference SECURITY.md');
-      }
+
+    // If README does not mention security, there is nothing to enforce here.
+    if (!readmeMentionsSecurity) {
+      return;
     }
-    
-    // Always pass but log information
-    assert.ok(true);
+
+    const referencesSecurityDoc = containsPattern(readmeContent, 'SECURITY\\.md', 'i');
+    assert.ok(
+      referencesSecurityDoc,
+      'If README mentions security, it should link to SECURITY.md for details'
+    );
   });
   
   it('both files should use consistent markdown formatting style', () => {

@@ -15,7 +15,7 @@ The test suite validates:
 npm test
 
 # Run with verbose output
-npm test:verbose
+npm run test:verbose
 
 # Run with Node.js test runner directly
 node --test tests/documentation.test.js
