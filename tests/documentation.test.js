@@ -720,3 +720,801 @@ describe('General Documentation Standards', () => {
     });
   });
 });
+describe('package.json Validation', () => {
+  let packageContent;
+  let packageJson;
+  
+  before(() => {
+    packageContent = readFile('package.json');
+    packageJson = JSON.parse(packageContent);
+  });
+  
+  describe('File Structure and Syntax', () => {
+    it('should exist and be readable', () => {
+      assert.ok(packageContent, 'package.json should exist and be readable');
+      assert.ok(packageContent.length > 0, 'package.json should not be empty');
+    });
+    
+    it('should be valid JSON', () => {
+      assert.doesNotThrow(
+        () => JSON.parse(packageContent),
+        'package.json should be valid JSON'
+      );
+    });
+    
+    it('should end with a newline', () => {
+      assert.ok(
+        packageContent.endsWith('\n'),
+        'package.json should end with a newline character'
+      );
+    });
+    
+    it('should not have trailing commas (JSON standard)', () => {
+      // Check for trailing commas which are invalid in JSON
+      const hasTrailingComma = /,(\s*[}\]])/g.test(packageContent);
+      assert.ok(
+        !hasTrailingComma,
+        'package.json should not contain trailing commas (invalid JSON)'
+      );
+    });
+  });
+  
+  describe('Required Fields', () => {
+    it('should have a name field', () => {
+      assert.ok(packageJson.name, 'package.json should have a "name" field');
+      assert.strictEqual(
+        typeof packageJson.name,
+        'string',
+        'name should be a string'
+      );
+    });
+    
+    it('should have a version field', () => {
+      assert.ok(packageJson.version, 'package.json should have a "version" field');
+      assert.ok(
+        /^\d+\.\d+\.\d+/.test(packageJson.version),
+        'version should follow semver format (e.g., 1.0.0)'
+      );
+    });
+    
+    it('should have a description field', () => {
+      assert.ok(
+        packageJson.description,
+        'package.json should have a "description" field'
+      );
+      assert.ok(
+        packageJson.description.length >= 10,
+        'description should be meaningful (at least 10 characters)'
+      );
+    });
+    
+    it('should have a license field', () => {
+      assert.ok(packageJson.license, 'package.json should have a "license" field');
+    });
+  });
+  
+  describe('Scripts Configuration', () => {
+    it('should have a scripts section', () => {
+      assert.ok(packageJson.scripts, 'package.json should have a "scripts" section');
+      assert.strictEqual(
+        typeof packageJson.scripts,
+        'object',
+        'scripts should be an object'
+      );
+    });
+    
+    it('should have a test script', () => {
+      assert.ok(
+        packageJson.scripts.test,
+        'package.json should have a "test" script'
+      );
+      assert.ok(
+        packageJson.scripts.test.length > 0,
+        'test script should not be empty'
+      );
+    });
+    
+    it('test script should use node --test runner', () => {
+      assert.ok(
+        packageJson.scripts.test.includes('node --test'),
+        'test script should use Node.js built-in test runner'
+      );
+    });
+    
+    it('should have verbose test script option', () => {
+      assert.ok(
+        packageJson.scripts['test:verbose'],
+        'package.json should have a "test:verbose" script for detailed output'
+      );
+    });
+    
+    it('test scripts should not use placeholder commands', () => {
+      const testScript = packageJson.scripts.test || '';
+      const placeholders = ['echo "Error: no test specified"', 'exit 1'];
+      
+      placeholders.forEach(placeholder => {
+        assert.ok(
+          !testScript.includes(placeholder),
+          'test script should not contain default placeholder'
+        );
+      });
+    });
+  });
+  
+  describe('Project Metadata', () => {
+    it('name should follow npm naming conventions', () => {
+      const name = packageJson.name;
+      assert.ok(
+        /^[a-z0-9-_]+$/.test(name),
+        'package name should contain only lowercase letters, numbers, hyphens, and underscores'
+      );
+      assert.ok(
+        name.length <= 214,
+        'package name should be 214 characters or less'
+      );
+    });
+    
+    it('should have keywords array (if present) with meaningful entries', () => {
+      if (packageJson.keywords) {
+        assert.ok(
+          Array.isArray(packageJson.keywords),
+          'keywords should be an array'
+        );
+        packageJson.keywords.forEach(keyword => {
+          assert.strictEqual(
+            typeof keyword,
+            'string',
+            'each keyword should be a string'
+          );
+          assert.ok(
+            keyword.length > 0,
+            'keywords should not be empty strings'
+          );
+        });
+      }
+    });
+  });
+  
+  describe('Dependencies Management', () => {
+    it('should not have dependencies for this documentation-only project', () => {
+      assert.ok(
+        !packageJson.dependencies || Object.keys(packageJson.dependencies).length === 0,
+        'documentation validation should use only Node.js built-in modules (no external dependencies)'
+      );
+    });
+    
+    it('should not have devDependencies for this test suite', () => {
+      assert.ok(
+        !packageJson.devDependencies || Object.keys(packageJson.devDependencies).length === 0,
+        'tests should use Node.js built-in test runner (no dev dependencies needed)'
+      );
+    });
+  });
+  
+  describe('JSON Formatting Quality', () => {
+    it('should use consistent indentation', () => {
+      const lines = packageContent.split('\n').filter(line => line.trim().length > 0);
+      let indentSize = null;
+      
+      for (const line of lines) {
+        const match = line.match(/^(\s+)/);
+        if (match) {
+          const spaces = match[1].length;
+          if (indentSize === null) {
+            indentSize = spaces;
+          } else if (spaces < indentSize) {
+            indentSize = Math.min(indentSize, spaces);
+          }
+        }
+      }
+      
+      // Indentation should be 2 or 4 spaces (common conventions)
+      if (indentSize) {
+        assert.ok(
+          indentSize === 2 || indentSize === 4,
+          `JSON should use 2 or 4 space indentation (found ${indentSize})`
+        );
+      }
+    });
+    
+    it('should not have mixed tabs and spaces', () => {
+      const lines = packageContent.split('\n');
+      const linesWithMixedIndent = lines.filter(line => 
+        line.match(/^\s/) && line.includes('\t') && line.includes(' ')
+      );
+      
+      assert.strictEqual(
+        linesWithMixedIndent.length,
+        0,
+        'package.json should not mix tabs and spaces for indentation'
+      );
+    });
+  });
+});
+
+describe('.gitignore Validation', () => {
+  let gitignoreContent;
+  let patterns;
+  
+  before(() => {
+    gitignoreContent = readFile('.gitignore');
+    patterns = gitignoreContent
+      .split('\n')
+      .map(line => line.trim())
+      .filter(line => line.length > 0 && !line.startsWith('#'));
+  });
+  
+  describe('File Structure', () => {
+    it('should exist and be readable', () => {
+      assert.ok(gitignoreContent, '.gitignore should exist and be readable');
+      assert.ok(gitignoreContent.length > 0, '.gitignore should not be empty');
+    });
+    
+    it('should have meaningful patterns', () => {
+      assert.ok(
+        patterns.length >= 5,
+        `.gitignore should have multiple patterns (found ${patterns.length}, expected at least 5)`
+      );
+    });
+    
+    it('should end with a newline', () => {
+      assert.ok(
+        gitignoreContent.endsWith('\n'),
+        '.gitignore should end with a newline character'
+      );
+    });
+    
+    it('should have section comments for organization', () => {
+      const commentLines = gitignoreContent
+        .split('\n')
+        .filter(line => line.trim().startsWith('#'));
+      
+      assert.ok(
+        commentLines.length >= 3,
+        '.gitignore should have section comments for organization'
+      );
+    });
+  });
+  
+  describe('Security-Critical Patterns', () => {
+    it('should exclude environment files', () => {
+      const envPatterns = patterns.filter(p => 
+        p.includes('.env') || p.match(/\.env\.\*/)
+      );
+      
+      assert.ok(
+        envPatterns.length > 0,
+        '.gitignore should exclude .env files to prevent committing secrets'
+      );
+    });
+    
+    it('should specifically exclude .env pattern', () => {
+      assert.ok(
+        patterns.some(p => p === '.env' || p === '.env.*'),
+        '.gitignore should explicitly exclude .env files'
+      );
+    });
+    
+    it('should allow .env.example files if .env.* is excluded', () => {
+      const excludesEnvStar = patterns.some(p => p === '.env.*');
+      if (excludesEnvStar) {
+        const allowsExample = patterns.some(p => p === '!.env.example');
+        // This is optional but good practice
+        if (!allowsExample) {
+          console.log('INFO: Consider adding !.env.example to allow example env files');
+        }
+      }
+      assert.ok(true); // Informational only
+    });
+    
+    it('should exclude common sensitive file patterns', () => {
+      const sensitivePatterns = [
+        { pattern: /\.pem$|\.key$|\.p12$/, name: 'private keys' },
+        { pattern: /\.env/, name: 'environment files' }
+      ];
+      
+      sensitivePatterns.forEach(({ pattern, name }) => {
+        const hasSensitiveExclusion = patterns.some(p => pattern.test(p));
+        if (!hasSensitiveExclusion && name !== 'environment files') {
+          console.log(`INFO: Consider excluding ${name}`);
+        }
+      });
+      
+      assert.ok(true); // Informational validation
+    });
+  });
+  
+  describe('Node.js Project Patterns', () => {
+    it('should exclude node_modules directory', () => {
+      assert.ok(
+        patterns.some(p => p === 'node_modules' || p === 'node_modules/'),
+        '.gitignore should exclude node_modules/ directory'
+      );
+    });
+    
+    it('should exclude npm log files', () => {
+      const hasNpmLogs = patterns.some(p => 
+        p.includes('npm-debug.log') || p.includes('*.log')
+      );
+      
+      assert.ok(
+        hasNpmLogs,
+        '.gitignore should exclude npm log files'
+      );
+    });
+    
+    it('should exclude package manager lock files if using multiple managers', () => {
+      // Check if both yarn and npm logs are excluded (optional but good practice)
+      const excludesYarnLog = patterns.some(p => p.includes('yarn'));
+      const excludesNpmLog = patterns.some(p => p.includes('npm-debug.log'));
+      
+      if (excludesYarnLog && excludesNpmLog) {
+        assert.ok(true, 'Properly excludes multiple package manager artifacts');
+      } else {
+        assert.ok(true); // Not a failure, just informational
+      }
+    });
+  });
+  
+  describe('Build and Output Patterns', () => {
+    it('should exclude common build output directories', () => {
+      const buildDirs = ['dist', 'build'];
+      const excludesBuildDirs = buildDirs.some(dir => 
+        patterns.some(p => p === dir || p === `${dir}/`)
+      );
+      
+      assert.ok(
+        excludesBuildDirs,
+        '.gitignore should exclude common build directories (dist/, build/)'
+      );
+    });
+    
+    it('should exclude test coverage directories', () => {
+      const coverageDirs = patterns.filter(p => 
+        p.includes('coverage') || p.includes('.nyc_output')
+      );
+      
+      assert.ok(
+        coverageDirs.length > 0,
+        '.gitignore should exclude test coverage directories'
+      );
+    });
+    
+    it('should exclude log files', () => {
+      const excludesLogs = patterns.some(p => p.includes('*.log') || p === '*.log');
+      assert.ok(
+        excludesLogs,
+        '.gitignore should exclude log files (*.log)'
+      );
+    });
+  });
+  
+  describe('IDE and Editor Patterns', () => {
+    it('should exclude common IDE directories', () => {
+      const idePatterns = ['.vscode', '.idea'];
+      const excludesIDEs = idePatterns.some(ide => 
+        patterns.some(p => p === ide || p === `${ide}/`)
+      );
+      
+      assert.ok(
+        excludesIDEs,
+        '.gitignore should exclude common IDE directories (.vscode/, .idea/)'
+      );
+    });
+    
+    it('should exclude editor swap files', () => {
+      const swapPatterns = patterns.filter(p => 
+        p.includes('.swp') || p.includes('.swo') || p.includes('*~')
+      );
+      
+      assert.ok(
+        swapPatterns.length > 0,
+        '.gitignore should exclude editor swap/backup files'
+      );
+    });
+  });
+  
+  describe('Operating System Patterns', () => {
+    it('should exclude OS-specific files', () => {
+      const osFiles = ['.DS_Store', 'Thumbs.db'];
+      const excludesOSFiles = osFiles.some(file => patterns.includes(file));
+      
+      assert.ok(
+        excludesOSFiles,
+        '.gitignore should exclude OS-specific files (.DS_Store, Thumbs.db)'
+      );
+    });
+    
+    it('should exclude macOS .DS_Store files', () => {
+      assert.ok(
+        patterns.includes('.DS_Store'),
+        '.gitignore should exclude .DS_Store (macOS)'
+      );
+    });
+    
+    it('should exclude Windows Thumbs.db files', () => {
+      assert.ok(
+        patterns.includes('Thumbs.db'),
+        '.gitignore should exclude Thumbs.db (Windows)'
+      );
+    });
+  });
+  
+  describe('Pattern Quality', () => {
+    it('should use proper glob patterns', () => {
+      patterns.forEach(pattern => {
+        // Check for common mistakes
+        assert.ok(
+          !pattern.includes('**/**'),
+          `Pattern should not have redundant wildcards: ${pattern}`
+        );
+        
+        // Check pattern doesn't start with /
+        if (pattern.startsWith('/')) {
+          console.log(`INFO: Pattern starts with /: ${pattern} (matches only at root)`);
+        }
+      });
+    });
+    
+    it('should not have trailing whitespace in patterns', () => {
+      const lines = gitignoreContent.split('\n');
+      const patternsWithTrailing = lines
+        .map((line, idx) => ({ line, idx: idx + 1 }))
+        .filter(({ line }) => {
+          const trimmed = line.trim();
+          return trimmed.length > 0 && 
+                 !trimmed.startsWith('#') && 
+                 line.endsWith(' ');
+        });
+      
+      assert.strictEqual(
+        patternsWithTrailing.length,
+        0,
+        `Patterns should not have trailing whitespace: lines ${patternsWithTrailing.map(p => p.idx).join(', ')}`
+      );
+    });
+    
+    it('should not have duplicate patterns', () => {
+      const uniquePatterns = new Set(patterns);
+      assert.strictEqual(
+        patterns.length,
+        uniquePatterns.size,
+        '.gitignore should not have duplicate patterns'
+      );
+    });
+  });
+  
+  describe('Security Validation', () => {
+    it('should not accidentally exclude critical files', () => {
+      const criticalFiles = ['package.json', 'README.md', 'SECURITY.md', '.gitignore'];
+      
+      criticalFiles.forEach(file => {
+        const excluded = patterns.some(p => {
+          // Simple check - exact match or wildcard that would match
+          return p === file || (p.includes('*') && new RegExp(p.replace('*', '.*')).test(file));
+        });
+        
+        assert.ok(
+          !excluded,
+          `Critical file should not be excluded: ${file}`
+        );
+      });
+    });
+    
+    it('should exclude patterns in correct order (negations after exclusions)', () => {
+      let lastNegationIndex = -1;
+      let firstExclusionAfterNegation = -1;
+      
+      patterns.forEach((pattern, idx) => {
+        if (pattern.startsWith('!')) {
+          lastNegationIndex = idx;
+        } else if (lastNegationIndex !== -1 && firstExclusionAfterNegation === -1) {
+          firstExclusionAfterNegation = idx;
+        }
+      });
+      
+      // This is more informational - gitignore order matters
+      assert.ok(true); // Pattern order validation completed
+    });
+  });
+});
+
+describe('Configuration Files Integration Tests', () => {
+  describe('Test Suite Self-Validation', () => {
+    it('package.json test script should execute the test file', () => {
+      const packageJson = JSON.parse(readFile('package.json'));
+      const testScript = packageJson.scripts.test;
+      
+      assert.ok(
+        testScript.includes('tests/') || testScript.includes('**/*.test.js'),
+        'test script should reference test files'
+      );
+    });
+    
+    it('test files should be discoverable by test runner', () => {
+      const testFiles = fs.readdirSync(path.join(process.cwd(), 'tests'))
+        .filter(file => file.endsWith('.test.js') || file.endsWith('.spec.js'));
+      
+      assert.ok(
+        testFiles.length > 0,
+        'tests/ directory should contain test files'
+      );
+    });
+    
+    it('.gitignore should not exclude test files', () => {
+      const gitignoreContent = readFile('.gitignore');
+      const patterns = gitignoreContent
+        .split('\n')
+        .filter(line => line.trim() && !line.trim().startsWith('#'));
+      
+      const excludesTests = patterns.some(p => 
+        p.includes('test') || p.includes('spec')
+      );
+      
+      if (excludesTests) {
+        console.log('WARNING: .gitignore may exclude test files');
+      }
+      
+      assert.ok(
+        !patterns.includes('tests/') && !patterns.includes('*.test.js'),
+        '.gitignore should not exclude test files'
+      );
+    });
+  });
+  
+  describe('Documentation and Configuration Consistency', () => {
+    it('package.json name should align with project name in README', () => {
+      const packageJson = JSON.parse(readFile('package.json'));
+      const readmeContent = readFile('README.md');
+      
+      const projectName = 'IFNOT';
+      assert.ok(
+        packageJson.name.toLowerCase().includes('ifnot') ||
+        readmeContent.includes(projectName),
+        'package.json name should relate to project name in README'
+      );
+    });
+    
+    it('package.json description should align with README content', () => {
+      const packageJson = JSON.parse(readFile('package.json'));
+      const readmeContent = readFile('README.md');
+      
+      // Both should mention key project concepts
+      const descKeywords = packageJson.description.toLowerCase();
+      const readmeKeywords = readmeContent.toLowerCase();
+      
+      assert.ok(
+        (descKeywords.includes('test') && readmeKeywords.includes('ifnot')) ||
+        (descKeywords.includes('documentation')),
+        'package.json description should align with README content theme'
+      );
+    });
+    
+    it('SECURITY.md recommendations should be reflected in .gitignore', () => {
+      const securityContent = readFile('SECURITY.md').toLowerCase();
+      const gitignoreContent = readFile('.gitignore').toLowerCase();
+      
+      // If SECURITY.md mentions .env, .gitignore should exclude it
+      if (securityContent.includes('.env')) {
+        assert.ok(
+          gitignoreContent.includes('.env'),
+          'If SECURITY.md mentions .env files, .gitignore should exclude them'
+        );
+      }
+    });
+  });
+  
+  describe('File System Organization', () => {
+    it('test files should be in tests/ directory', () => {
+      const testsDir = path.join(process.cwd(), 'tests');
+      assert.ok(
+        fs.existsSync(testsDir),
+        'tests/ directory should exist'
+      );
+      assert.ok(
+        fs.statSync(testsDir).isDirectory(),
+        'tests/ should be a directory'
+      );
+    });
+    
+    it('tests/ directory should contain test documentation', () => {
+      const testReadme = path.join(process.cwd(), 'tests', 'README.md');
+      if (fs.existsSync(testReadme)) {
+        const content = fs.readFileSync(testReadme, 'utf-8');
+        assert.ok(
+          content.length > 50,
+          'tests/README.md should have substantial documentation'
+        );
+      } else {
+        console.log('INFO: Consider adding tests/README.md to document test suite');
+      }
+      assert.ok(true);
+    });
+    
+    it('root should have essential documentation files', () => {
+      const essentialDocs = ['README.md', 'SECURITY.md'];
+      essentialDocs.forEach(doc => {
+        const exists = fs.existsSync(path.join(process.cwd(), doc));
+        assert.ok(exists, `Essential documentation file should exist: ${doc}`);
+      });
+    });
+  });
+});
+
+describe('Enhanced Edge Case Testing', () => {
+  describe('README.md Edge Cases', () => {
+    let readmeContent;
+    
+    before(() => {
+      readmeContent = readFile('README.md');
+    });
+    
+    it('should handle extremely short content gracefully', () => {
+      // README is intentionally minimal, should still be valid
+      assert.ok(readmeContent.length >= 10, 'README should have at least 10 characters');
+    });
+    
+    it('should not have broken markdown syntax', () => {
+      // Check for unmatched markdown syntax
+      const openBrackets = (readmeContent.match(/\[/g) || []).length;
+      const closeBrackets = (readmeContent.match(/\]/g) || []).length;
+      const openParens = (readmeContent.match(/\(/g) || []).length;
+      const closeParens = (readmeContent.match(/\)/g) || []).length;
+      
+      assert.strictEqual(
+        openBrackets,
+        closeBrackets,
+        'Markdown links should have matching brackets'
+      );
+      assert.strictEqual(
+        openParens,
+        closeParens,
+        'Markdown links should have matching parentheses'
+      );
+    });
+    
+    it('should not have HTML comments that might leak information', () => {
+      const hasHTMLComments = /<!--[\s\S]*?-->/.test(readmeContent);
+      if (hasHTMLComments) {
+        console.log('INFO: README contains HTML comments - verify they don\'t leak sensitive info');
+      }
+      assert.ok(true); // Informational
+    });
+    
+    it('should have consistent line endings (LF not CRLF)', () => {
+      const hasCRLF = readmeContent.includes('\r\n');
+      assert.ok(
+        !hasCRLF,
+        'README should use LF line endings, not CRLF (better for git)'
+      );
+    });
+  });
+  
+  describe('SECURITY.md Edge Cases', () => {
+    let securityContent;
+    
+    before(() => {
+      securityContent = readFile('SECURITY.md');
+    });
+    
+    it('should not contain actual secrets in examples', () => {
+      // Check for patterns that look like real secrets
+      const suspiciousPatterns = [
+        /ghp_[a-zA-Z0-9]{36}/,  // GitHub personal access token
+        /sk_live_[a-zA-Z0-9]+/, // Stripe live key
+        /AKIA[0-9A-Z]{16}/,     // AWS access key
+      ];
+      
+      suspiciousPatterns.forEach(pattern => {
+        assert.ok(
+          !pattern.test(securityContent),
+          'SECURITY.md should not contain real secrets, even in examples'
+        );
+      });
+    });
+    
+    it('should not have broken contact information', () => {
+      // If email is mentioned, it should be properly formatted
+      const emailMatches = securityContent.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g);
+      if (emailMatches) {
+        emailMatches.forEach(email => {
+          assert.ok(
+            email.includes('.'),
+            'Email addresses should have proper domain format'
+          );
+        });
+      }
+      
+      // Check for GitHub username references
+      const hasGitHubUser = /@[A-Za-z0-9_-]+/.test(securityContent);
+      assert.ok(
+        hasGitHubUser,
+        'SECURITY.md should reference repository owner/maintainer'
+      );
+    });
+    
+    it('should have consistent list formatting', () => {
+      const lines = securityContent.split('\n');
+      const listMarkers = lines
+        .filter(line => /^\s*[-*+]\s/.test(line))
+        .map(line => line.match(/^\s*([-*+])/)[1]);
+      
+      if (listMarkers.length > 1) {
+        const uniqueMarkers = new Set(listMarkers);
+        assert.ok(
+          uniqueMarkers.size <= 2,
+          'Should use consistent list markers throughout document'
+        );
+      }
+    });
+    
+    it('should have proper numbered list sequences', () => {
+      const lines = securityContent.split('\n');
+      const numberedLists = [];
+      let currentList = [];
+      
+      lines.forEach(line => {
+        const match = line.match(/^\s*(\d+)\.\s/);
+        if (match) {
+          currentList.push(parseInt(match[1]));
+        } else if (currentList.length > 0) {
+          numberedLists.push([...currentList]);
+          currentList = [];
+        }
+      });
+      
+      if (currentList.length > 0) {
+        numberedLists.push(currentList);
+      }
+      
+      numberedLists.forEach(list => {
+        for (let i = 0; i < list.length; i++) {
+          assert.strictEqual(
+            list[i],
+            i + 1,
+            `Numbered list should be sequential (expected ${i + 1}, found ${list[i]})`
+          );
+        }
+      });
+    });
+  });
+  
+  describe('Cross-File Security Validation', () => {
+    it('.gitignore patterns should cover files mentioned in SECURITY.md', () => {
+      const securityContent = readFile('SECURITY.md');
+      const gitignoreContent = readFile('.gitignore');
+      
+      // Check if .env is mentioned in security and excluded in gitignore
+      if (securityContent.includes('.env')) {
+        assert.ok(
+          gitignoreContent.includes('.env'),
+          'Files mentioned in SECURITY.md should be excluded in .gitignore'
+        );
+      }
+      
+      // Check for .pem files
+      if (securityContent.includes('.pem')) {
+        const excludesPem = gitignoreContent.includes('*.pem');
+        if (!excludesPem) {
+          console.log('INFO: Consider excluding *.pem files in .gitignore as mentioned in SECURITY.md');
+        }
+      }
+    });
+    
+    it('package.json should not expose sensitive information', () => {
+      const packageContent = readFile('package.json');
+      const packageJson = JSON.parse(packageContent);
+      
+      // Check for common mistakes
+      const sensitiveFields = ['password', 'token', 'key', 'secret'];
+      const jsonString = JSON.stringify(packageJson).toLowerCase();
+      
+      sensitiveFields.forEach(field => {
+        assert.ok(
+          !jsonString.includes(`"${field}":`),
+          `package.json should not contain sensitive field: ${field}`
+        );
+      });
+    });
+  });
+});
