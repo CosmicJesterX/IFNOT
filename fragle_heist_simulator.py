@@ -8,7 +8,7 @@ crew = [
     "Bobby Blip",
     "Miss Static",
     "YELLER",
-    "Dennis (not here right now)"
+    "Dennis (not here right now)",
 ]
 
 locations = [
@@ -16,7 +16,7 @@ locations = [
     "The Cookie Mainframe",
     "That Suspicious Ice Cream Truck",
     "Bank of Emotionally Unavailable Accounts",
-    "Fridge behind the firewall"
+    "Fridge behind the firewall",
 ]
 
 obstacles = [
@@ -24,7 +24,7 @@ obstacles = [
     "someone changed all the passwords to 🐸 emojis",
     "YELLER got into a shouting match with a lamppost",
     "Miss Static forgot her own plan",
-    "Dennis left mid-heist to buy oat milk"
+    "Dennis left mid-heist to buy oat milk",
 ]
 
 outcomes = [
@@ -32,13 +32,14 @@ outcomes = [
     "They accidentally opened a wormhole 🌀",
     "Everyone’s stuck in an infinite while-loop",
     "They escaped riding spinning chairs",
-    "They got hired as bank security consultants"
+    "They got hired as bank security consultants",
 ]
+
 
 def run_heist():
     print("🧠 Initializing Fragle Heist Simulation...\n")
     time.sleep(1)
-    
+
     print(f"🎩 Assembling the crew...")
     for member in crew:
         time.sleep(0.5)
@@ -57,6 +58,7 @@ def run_heist():
     print(f"   > {outcome}")
 
     print("\n✨ Simulation Complete. Press 🍪 to reboot.")
+
 
 if __name__ == "__main__":
     run_heist()
