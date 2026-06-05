@@ -96,7 +96,7 @@ When working with contributors:
 
 3. **Minimal Dependencies**: The project intentionally has minimal dependencies. Avoid adding unnecessary external packages unless there's a clear need.
 
-4. **File Purpose**: 
+4. **File Purpose**:
    - `console.log` appears to be a placeholder file
    - `requirements.txt` documents Node.js dependencies but actual installation uses npm/package.json
 
